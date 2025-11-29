@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <Commands package="guidAIAssistantEndpointPackage">
+
+        <Menus>
+            <Menu guid="guidAIAssistantEndpointPackageCmdSet" id="ToolsMenu" priority="0x0000" type="Menu">
+                <Parent guid="guidSHLMainMenu" id="IDG_VS_TOOLS_EXT_TOOLS" />
+                <Strings>
+                    <ButtonText>AI Assistant</ButtonText>
+                </Strings>
+            </Menu>
+        </Menus>
+
+        <Groups>
+            <Group guid="guidAIAssistantEndpointPackageCmdSet" id="MyMenuGroup" priority="0x0600">
+                <Parent guid="guidAIAssistantEndpointPackageCmdSet" id="ToolsMenu" />
+            </Group>
+        </Groups>
+
+        <Buttons>
+            <Button guid="guidAIAssistantEndpointPackageCmdSet" id="cmdidShowAIChat" priority="0x0100" type="Button">
+                <Parent guid="guidAIAssistantEndpointPackageCmdSet" id="MyMenuGroup" />
+                <Strings>
+                    <ButtonText>Open AI Chat</ButtonText>
+                </Strings>
+            </Button>
+            <Button guid="guidAIAssistantEndpointPackageCmdSet" id="cmdidShowSettings" priority="0x0101" type="Button">
+                <Parent guid="guidAIAssistantEndpointPackageCmdSet" id="MyMenuGroup" />
+                <Strings>
+                    <ButtonText>Settings</ButtonText>
+                </Strings>
+            </Button>
+            <Button guid="guidAIAssistantEndpointPackageCmdSet" id="cmdidShowOptionsPage" priority="0x0102" type="Button">
+                <Parent guid="guidAIAssistantEndpointPackageCmdSet" id="MyMenuGroup" />
+                <Strings>
+                    <ButtonText>Tools ? Options</ButtonText>
+                </Strings>
+            </Button>
+        </Buttons>
+
+    </Commands>
+
+    <Symbols>
+        <GuidSymbol name="guidAIAssistantEndpointPackage" value="{910fb63c-0431-45e6-a526-e7ad35867bd9}" />
+
+        <GuidSymbol name="guidAIAssistantEndpointPackageCmdSet" value="{b3f1f1f1-b3f1-b3f1-b3f1-b3f1b3f1b3f1}">
+            <IDSymbol name="MyMenuGroup" value="0x1020" />
+            <IDSymbol name="ToolsMenu" value="0x1000" />
+            <IDSymbol name="cmdidShowAIChat" value="0x0100" />
+            <IDSymbol name="cmdidShowSettings" value="0x0101" />
+            <IDSymbol name="cmdidShowOptionsPage" value="0x0102" />
+        </GuidSymbol>
+    </Symbols>
+
+</CommandTable>

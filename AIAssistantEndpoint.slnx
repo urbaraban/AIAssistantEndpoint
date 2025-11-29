@@ -4,7 +4,7 @@
     <Platform Name="arm64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="AIAssistantEndpoint/AIAssistantEndpoint.csproj">
+  <Project Path="AIAssistantEndpoint/AIAssistantEndpoint.csproj" Id="a5adb284-5a9e-47fb-8a56-2a079cc29357">
     <Platform Solution="*|arm64" Project="arm64" />
     <Platform Solution="*|x86" Project="x86" />
   </Project>
