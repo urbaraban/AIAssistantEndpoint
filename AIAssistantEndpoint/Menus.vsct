@@ -40,6 +40,36 @@
                     <ButtonText>Tools \u2192 Options</ButtonText>
                 </Strings>
             </Button>
+            <Button guid="guidAIAssistantEndpointPackageCmdSet" id="cmdidShowTestConnection" priority="0x0103" type="Button">
+                <Parent guid="guidAIAssistantEndpointPackageCmdSet" id="MyMenuGroup" />
+                <Strings>
+                    <ButtonText>Test Connection</ButtonText>
+                </Strings>
+            </Button>
+            <Button guid="guidAIAssistantEndpointPackageCmdSet" id="cmdidAcceptSuggestion" priority="0x0104" type="Button">
+                <Parent guid="guidAIAssistantEndpointPackageCmdSet" id="MyMenuGroup" />
+                <Strings>
+                    <ButtonText>Accept AI Suggestion</ButtonText>
+                </Strings>
+            </Button>
+            <Button guid="guidAIAssistantEndpointPackageCmdSet" id="cmdidRejectSuggestion" priority="0x0105" type="Button">
+                <Parent guid="guidAIAssistantEndpointPackageCmdSet" id="MyMenuGroup" />
+                <Strings>
+                    <ButtonText>Reject AI Suggestion</ButtonText>
+                </Strings>
+            </Button>
+            <Button guid="guidAIAssistantEndpointPackageCmdSet" id="cmdidExplainCode" priority="0x0106" type="Button">
+                <Parent guid="guidAIAssistantEndpointPackageCmdSet" id="MyMenuGroup" />
+                <Strings>
+                    <ButtonText>Объяснить данный код</ButtonText>
+                </Strings>
+            </Button>
+            <Button guid="guidAIAssistantEndpointPackageCmdSet" id="cmdidDescribeMethod" priority="0x0107" type="Button">
+                <Parent guid="guidAIAssistantEndpointPackageCmdSet" id="MyMenuGroup" />
+                <Strings>
+                    <ButtonText>Описать метод с помощью AI</ButtonText>
+                </Strings>
+            </Button>
         </Buttons>
 
     </Commands>
@@ -53,6 +83,11 @@
             <IDSymbol name="cmdidShowAIChat" value="0x0100" />
             <IDSymbol name="cmdidShowSettings" value="0x0101" />
             <IDSymbol name="cmdidShowOptionsPage" value="0x0102" />
+            <IDSymbol name="cmdidShowTestConnection" value="0x0103" />
+            <IDSymbol name="cmdidAcceptSuggestion" value="0x0104" />
+            <IDSymbol name="cmdidRejectSuggestion" value="0x0105" />
+            <IDSymbol name="cmdidExplainCode" value="0x0106" />
+            <IDSymbol name="cmdidDescribeMethod" value="0x0107" />
         </GuidSymbol>
     </Symbols>
 

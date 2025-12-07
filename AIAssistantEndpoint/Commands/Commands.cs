@@ -6,6 +6,10 @@ namespace AIAssistantEndpoint.Commands
     using Microsoft.VisualStudio.Shell;
     using Microsoft.VisualStudio.Shell.Interop;
     using AIAssistantEndpoint.Logging;
+    using System.Windows;
+    using AIAssistantEndpoint.Configuration;
+    using AIAssistantEndpoint.Settings;
+    using AIAssistantEndpoint.Services;
 
     /// <summary>
     /// Команда для открытия окна чата
@@ -277,6 +281,229 @@ namespace AIAssistantEndpoint.Commands
             catch (Exception ex)
             {
                 _logger.Error($"Ошибка в Execute: {ex.Message}", ex);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Команда для быстрого теста подключения (без открытия окна настроек)
+    /// </summary>
+    internal sealed class ShowTestConnectionCommand
+    {
+        public const int CommandId = 0x0103;
+        public static readonly Guid CommandSet = new Guid("b3f1f1f1-b3f1-b3f1-b3f1-b3f1b3f1b3f1");
+
+        private readonly AsyncPackage _package;
+        private readonly ILogger _logger;
+
+        private ShowTestConnectionCommand(AsyncPackage package, OleMenuCommandService commandService)
+        {
+            _package = package ?? throw new ArgumentNullException(nameof(package));
+            commandService = commandService ?? throw new ArgumentNullException(nameof(commandService));
+            _logger = new DebugLogger("ShowTestConnectionCommand");
+
+            try
+            {
+                var menuCommandID = new CommandID(CommandSet, CommandId);
+                var menuItem = new MenuCommand(this.Execute, menuCommandID);
+                commandService.AddCommand(menuItem);
+                _logger.Info("ShowTestConnectionCommand успешно зарегистрирована");
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Ошибка при регистрации команды: {ex.Message}", ex);
+            }
+        }
+
+        public static ShowTestConnectionCommand Instance { get; private set; }
+
+        public static async Task InitializeAsync(AsyncPackage package)
+        {
+            try
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                var commandService = await package.GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
+                if (commandService != null)
+                {
+                    Instance = new ShowTestConnectionCommand(package, commandService);
+                }
+            }
+            catch (Exception ex)
+            {
+                var logger = new DebugLogger("ShowTestConnectionCommand");
+                logger.Error($"Ошибка инициализации: {ex.Message}", ex);
+            }
+        }
+
+        private void Execute(object sender, EventArgs e)
+        {
+            try
+            {
+                ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+                {
+                    try
+                    {
+                        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                        var configManager = new JsonConfigurationManager();
+                        if (!configManager.SettingsExist())
+                        {
+                            MessageBox.Show("Настройки не найдены. Откройте Settings и заполните поля.", "Test Connection", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            return;
+                        }
+
+                        var settings = configManager.LoadSettings();
+                        var service = new ServerConnectionService(settings);
+                        bool connected = await service.ConnectAsync();
+
+                        if (connected)
+                        {
+                            MessageBox.Show("? Соединение успешно.", "Test Connection", MessageBoxButton.OK, MessageBoxImage.Information);
+                        }
+                        else
+                        {
+                            MessageBox.Show("? Ошибка подключения.", "Test Connection", MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error($"Ошибка при выполнении теста подключения: {ex.Message}", ex);
+                        MessageBox.Show($"Ошибка теста подключения: {ex.Message}", "Test Connection", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Ошибка в Execute: {ex.Message}", ex);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Команда Accept AI Suggestion
+    /// </summary>
+    internal sealed class AcceptSuggestionCommand
+    {
+        public const int CommandId = 0x0104;
+        public static readonly Guid CommandSet = new Guid("b3f1f1f1-b3f1-b3f1-b3f1-b3f1b3f1b3f1");
+
+        private readonly AsyncPackage _package;
+        private readonly ILogger _logger;
+
+        private AcceptSuggestionCommand(AsyncPackage package, OleMenuCommandService commandService)
+        {
+            _package = package ?? throw new ArgumentNullException(nameof(package));
+            commandService = commandService ?? throw new ArgumentNullException(nameof(commandService));
+            _logger = new DebugLogger("AcceptSuggestionCommand");
+
+            try
+            {
+                var menuCommandID = new CommandID(CommandSet, CommandId);
+                var menuItem = new MenuCommand(this.Execute, menuCommandID);
+                commandService.AddCommand(menuItem);
+                _logger.Info("AcceptSuggestionCommand registered");
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Error registering AcceptSuggestionCommand: {ex.Message}", ex);
+            }
+        }
+
+        public static AcceptSuggestionCommand Instance { get; private set; }
+
+        public static async Task InitializeAsync(AsyncPackage package)
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            var commandService = await package.GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
+            if (commandService != null)
+            {
+                Instance = new AcceptSuggestionCommand(package, commandService);
+            }
+        }
+
+        private void Execute(object sender, EventArgs e)
+        {
+            try
+            {
+                // Accept suggestion via SuggestionManager (inline ghost text)
+                ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+                {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    try
+                    {
+                        AIAssistantEndpoint.Editor.SuggestionManager.AcceptSuggestion();
+                    }
+                    catch { }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Error executing AcceptSuggestionCommand: {ex.Message}", ex);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Команда Reject AI Suggestion
+    /// </summary>
+    internal sealed class RejectSuggestionCommand
+    {
+        public const int CommandId = 0x0105;
+        public static readonly Guid CommandSet = new Guid("b3f1f1f1-b3f1-b3f1-b3f1-b3f1b3f1b3f1");
+
+        private readonly AsyncPackage _package;
+        private readonly ILogger _logger;
+
+        private RejectSuggestionCommand(AsyncPackage package, OleMenuCommandService commandService)
+        {
+            _package = package ?? throw new ArgumentNullException(nameof(package));
+            commandService = commandService ?? throw new ArgumentNullException(nameof(commandService));
+            _logger = new DebugLogger("RejectSuggestionCommand");
+
+            try
+            {
+                var menuCommandID = new CommandID(CommandSet, CommandId);
+                var menuItem = new MenuCommand(this.Execute, menuCommandID);
+                commandService.AddCommand(menuItem);
+                _logger.Info("RejectSuggestionCommand registered");
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Error registering RejectSuggestionCommand: {ex.Message}", ex);
+            }
+        }
+
+        public static RejectSuggestionCommand Instance { get; private set; }
+
+        public static async Task InitializeAsync(AsyncPackage package)
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            var commandService = await package.GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
+            if (commandService != null)
+            {
+                Instance = new RejectSuggestionCommand(package, commandService);
+            }
+        }
+
+        private void Execute(object sender, EventArgs e)
+        {
+            try
+            {
+                // Reject suggestion via SuggestionManager
+                ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+                {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    try
+                    {
+                        AIAssistantEndpoint.Editor.SuggestionManager.ClearSuggestion();
+                    }
+                    catch { }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Error executing RejectSuggestionCommand: {ex.Message}", ex);
             }
         }
     }

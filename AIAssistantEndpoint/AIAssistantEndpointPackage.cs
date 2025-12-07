@@ -69,6 +69,36 @@ namespace AIAssistantEndpoint
                     Logger.Error($"Ошибка инициализации ShowOptionsPageCommand: {ex.Message}", ex);
                 }
 
+                try
+                {
+                    await Commands.ShowTestConnectionCommand.InitializeAsync(this);
+                    Logger.Info("ShowTestConnectionCommand инициализирована");
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error($"Ошибка инициализации ShowTestConnectionCommand: {ex.Message}", ex);
+                }
+
+                try
+                {
+                    await Commands.AcceptSuggestionCommand.InitializeAsync(this);
+                    Logger.Info("AcceptSuggestionCommand инициализирована");
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error($"Ошибка инициализации AcceptSuggestionCommand: {ex.Message}", ex);
+                }
+
+                try
+                {
+                    await Commands.RejectSuggestionCommand.InitializeAsync(this);
+                    Logger.Info("RejectSuggestionCommand инициализирована");
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error($"Ошибка инициализации RejectSuggestionCommand: {ex.Message}", ex);
+                }
+
                 Logger.Info("Инициализация пакета завершена");
             }
             catch (Exception ex)

@@ -17,6 +17,7 @@ namespace AIAssistantEndpoint.OptionPages
         private string _apiKey = "";
         private int _timeoutMs = 30000;
         private bool _useSSL = true;
+        private string _agentAccessId = "";
         private readonly ILogger _logger;
 
         public GeneralOptionsPage()
@@ -60,22 +61,32 @@ namespace AIAssistantEndpoint.OptionPages
             set { _useSSL = value; }
         }
 
+        [Category("Connection")]
+        [DisplayName("Agent Access ID")]
+        [Description("Agent access ID (agent_access_id) для Timeweb Agent API")]
+        public string AgentAccessId
+        {
+            get { return _agentAccessId; }
+            set { _agentAccessId = value; }
+        }
+
         public override void SaveSettingsToStorage()
         {
             try
             {
                 base.SaveSettingsToStorage();
-                
+
                 // Сохраняем в JSON файл
                 var settings = new Settings.ServerConnectionSettings(_serverUrl, _apiKey)
                 {
                     UseSSL = _useSSL,
-                    TimeoutMs = _timeoutMs
+                    TimeoutMs = _timeoutMs,
+                    AgentAccessId = _agentAccessId
                 };
 
                 var configManager = new Configuration.JsonConfigurationManager();
                 configManager.SaveSettings(settings);
-                
+
                 _logger.Info("Настройки успешно сохранены");
             }
             catch (Exception ex)
@@ -101,9 +112,10 @@ namespace AIAssistantEndpoint.OptionPages
                         _apiKey = settings.ApiKey ?? "";
                         _timeoutMs = settings.TimeoutMs;
                         _useSSL = settings.UseSSL;
+                        _agentAccessId = settings.AgentAccessId ?? "";
                     }
                 }
-                
+
                 _logger.Info("Настройки успешно загружены");
             }
             catch (Exception ex)
@@ -114,6 +126,7 @@ namespace AIAssistantEndpoint.OptionPages
                 _apiKey = "";
                 _timeoutMs = 30000;
                 _useSSL = true;
+                _agentAccessId = "";
             }
         }
     }

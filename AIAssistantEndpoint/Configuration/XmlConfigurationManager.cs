@@ -4,6 +4,7 @@ namespace AIAssistantEndpoint.Configuration
     using System.IO;
     using AIAssistantEndpoint.Settings;
     using AIAssistantEndpoint.Logging;
+    using Newtonsoft.Json.Linq;
 
     public class JsonConfigurationManager : IConfigurationManager
     {
@@ -38,11 +39,11 @@ namespace AIAssistantEndpoint.Configuration
             {
                 var json = SerializeToJson(settings);
                 File.WriteAllText(_configFilePath, json);
-                _logger.Info($"Настройки сохранены в: {_configFilePath}");
+                _logger.Info($"Saved settings to: {_configFilePath}");
             }
             catch (Exception ex)
             {
-                _logger.Error("Ошибка при сохранении настроек", ex);
+                _logger.Error("Error while saving settings", ex);
                 throw;
             }
         }
@@ -51,7 +52,7 @@ namespace AIAssistantEndpoint.Configuration
         {
             if (!SettingsExist())
             {
-                _logger.Warning("Файл настроек не найден");
+                _logger.Warning("Settings file not found");
                 return null;
             }
 
@@ -59,12 +60,12 @@ namespace AIAssistantEndpoint.Configuration
             {
                 var json = File.ReadAllText(_configFilePath);
                 var settings = DeserializeFromJson(json);
-                _logger.Info("Настройки загружены успешно");
+                _logger.Info("Settings loaded successfully");
                 return settings;
             }
             catch (Exception ex)
             {
-                _logger.Error("Ошибка при загрузке настроек", ex);
+                _logger.Error("Error while loading settings", ex);
                 throw;
             }
         }
@@ -81,58 +82,74 @@ namespace AIAssistantEndpoint.Configuration
                 if (SettingsExist())
                 {
                     File.Delete(_configFilePath);
-                    _logger.Info("Настройки удалены");
+                    _logger.Info("Settings deleted");
                 }
             }
             catch (Exception ex)
             {
-                _logger.Error("Ошибка при удалении настроек", ex);
+                _logger.Error("Error while deleting settings", ex);
                 throw;
             }
         }
 
         private static string SerializeToJson(ServerConnectionSettings settings)
         {
-            return $"{{\"serverUrl\":\"{EscapeJson(settings.ServerUrl)}\",\"apiKey\":\"{EscapeJson(settings.ApiKey)}\",\"timeoutMs\":{settings.TimeoutMs},\"useSSL\":{(settings.UseSSL ? "true" : "false")}}}";
+            var j = new JObject
+            {
+                ["serverUrl"] = settings.ServerUrl ?? string.Empty,
+                ["apiKey"] = settings.ApiKey ?? string.Empty,
+                ["timeoutMs"] = settings.TimeoutMs,
+                ["useSSL"] = settings.UseSSL,
+
+                ["callEndpoint"] = settings.CallEndpoint ?? string.Empty,
+                ["chatEndpoint"] = settings.ChatEndpoint ?? string.Empty,
+                ["streamingEndpoint"] = settings.StreamingEndpoint ?? string.Empty,
+                ["modelsendpoint"] = settings.ModelsEndpoint ?? string.Empty,
+
+                ["authHeaderName"] = settings.AuthHeaderName ?? string.Empty,
+                ["authScheme"] = settings.AuthScheme ?? string.Empty,
+                ["useApiKeyQuery"] = settings.UseApiKeyQuery,
+                ["apiKeyQueryName"] = settings.ApiKeyQueryName ?? string.Empty,
+
+                ["agentAccessId"] = settings.AgentAccessId ?? string.Empty
+            };
+
+            return j.ToString();
         }
 
         private static ServerConnectionSettings DeserializeFromJson(string json)
         {
             var settings = new ServerConnectionSettings();
 
-            var urlMatch = System.Text.RegularExpressions.Regex.Match(json, @"""serverUrl"":""([^""]*)""");
-            if (urlMatch.Success)
-                settings.ServerUrl = UnescapeJson(urlMatch.Groups[1].Value);
+            try
+            {
+                var j = JObject.Parse(json);
 
-            var keyMatch = System.Text.RegularExpressions.Regex.Match(json, @"""apiKey"":""([^""]*)""");
-            if (keyMatch.Success)
-                settings.ApiKey = UnescapeJson(keyMatch.Groups[1].Value);
+                settings.ServerUrl = j.Value<string>("serverUrl") ?? settings.ServerUrl;
+                settings.ApiKey = j.Value<string>("apiKey") ?? settings.ApiKey;
+                settings.TimeoutMs = j.Value<int?>("timeoutMs") ?? settings.TimeoutMs;
+                settings.UseSSL = j.Value<bool?>("useSSL") ?? settings.UseSSL;
 
-            var timeoutMatch = System.Text.RegularExpressions.Regex.Match(json, @"""timeoutMs"":(\d+)");
-            if (timeoutMatch.Success && int.TryParse(timeoutMatch.Groups[1].Value, out int timeout))
-                settings.TimeoutMs = timeout;
+                settings.CallEndpoint = j.Value<string>("callEndpoint") ?? settings.CallEndpoint;
+                settings.ChatEndpoint = j.Value<string>("chatEndpoint") ?? settings.ChatEndpoint;
+                settings.StreamingEndpoint = j.Value<string>("streamingEndpoint") ?? settings.StreamingEndpoint;
+                settings.ModelsEndpoint = j.Value<string>("modelsendpoint") ?? settings.ModelsEndpoint;
 
-            var sslMatch = System.Text.RegularExpressions.Regex.Match(json, @"""useSSL"":(true|false)");
-            if (sslMatch.Success)
-                settings.UseSSL = sslMatch.Groups[1].Value == "true";
+                settings.AuthHeaderName = j.Value<string>("authHeaderName") ?? settings.AuthHeaderName;
+                settings.AuthScheme = j.Value<string>("authScheme") ?? settings.AuthScheme;
+                settings.UseApiKeyQuery = j.Value<bool?>("useApiKeyQuery") ?? settings.UseApiKeyQuery;
+                settings.ApiKeyQueryName = j.Value<string>("apiKeyQueryName") ?? settings.ApiKeyQueryName;
+
+                settings.AgentAccessId = j.Value<string>("agentAccessId") ?? settings.AgentAccessId;
+            }
+            catch (Exception ex)
+            {
+                // If parsing fails, log and return defaults
+                var logger = new DebugLogger("ConfigManager");
+                logger.Error("Failed to parse settings JSON", ex);
+            }
 
             return settings;
-        }
-
-        private static string EscapeJson(string input)
-        {
-            if (string.IsNullOrEmpty(input))
-                return string.Empty;
-
-            return input.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", "\\r");
-        }
-
-        private static string UnescapeJson(string input)
-        {
-            if (string.IsNullOrEmpty(input))
-                return string.Empty;
-
-            return input.Replace("\\n", "\n").Replace("\\r", "\r").Replace("\\\"", "\"").Replace("\\\\", "\\");
         }
     }
 }

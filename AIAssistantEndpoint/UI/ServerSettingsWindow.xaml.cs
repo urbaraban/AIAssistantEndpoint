@@ -20,6 +20,7 @@ namespace AIAssistantEndpoint.UI
 
         // UI элементы
         private TextBox _serverUrlTextBox;
+        private TextBox _agentAccessIdTextBox;
         private PasswordBox _apiKeyPasswordBox;
         private CheckBox _useSSLCheckBox;
         private TextBox _timeoutTextBox;
@@ -35,6 +36,7 @@ namespace AIAssistantEndpoint.UI
             
             // Получаем элементы из XAML
             _serverUrlTextBox = (TextBox)FindName("ServerUrlTextBox");
+            _agentAccessIdTextBox = (TextBox)FindName("AgentAccessIdTextBox");
             _apiKeyPasswordBox = (PasswordBox)FindName("ApiKeyPasswordBox");
             _useSSLCheckBox = (CheckBox)FindName("UseSSLCheckBox");
             _timeoutTextBox = (TextBox)FindName("TimeoutTextBox");
@@ -55,6 +57,7 @@ namespace AIAssistantEndpoint.UI
                 {
                     _currentSettings = configManager.LoadSettings();
                     if (_serverUrlTextBox != null) _serverUrlTextBox.Text = _currentSettings.ServerUrl;
+                    if (_agentAccessIdTextBox != null) _agentAccessIdTextBox.Text = _currentSettings.AgentAccessId;
                     if (_apiKeyPasswordBox != null) _apiKeyPasswordBox.Password = _currentSettings.ApiKey;
                     if (_useSSLCheckBox != null) _useSSLCheckBox.IsChecked = _currentSettings.UseSSL;
                     if (_timeoutTextBox != null) _timeoutTextBox.Text = _currentSettings.TimeoutMs.ToString();
@@ -95,6 +98,16 @@ namespace AIAssistantEndpoint.UI
                     return;
                 }
 
+                if (_agentAccessIdTextBox == null || string.IsNullOrWhiteSpace(_agentAccessIdTextBox.Text))
+                {
+                    if (_statusTextBlock != null)
+                    {
+                        _statusTextBlock.Text = "❌ Укажите Agent Access ID";
+                        _statusTextBlock.Foreground = System.Windows.Media.Brushes.Red;
+                    }
+                    return;
+                }
+
                 if (_apiKeyPasswordBox == null || string.IsNullOrWhiteSpace(_apiKeyPasswordBox.Password))
                 {
                     if (_statusTextBlock != null)
@@ -127,7 +140,8 @@ namespace AIAssistantEndpoint.UI
                     apiKey: _apiKeyPasswordBox.Password)
                 {
                     UseSSL = _useSSLCheckBox.IsChecked ?? true,
-                    TimeoutMs = timeout
+                    TimeoutMs = timeout,
+                    AgentAccessId = _agentAccessIdTextBox.Text
                 };
 
                 var service = new ServerConnectionService(settings);
@@ -184,6 +198,16 @@ namespace AIAssistantEndpoint.UI
                     return;
                 }
 
+                if (_agentAccessIdTextBox == null || string.IsNullOrWhiteSpace(_agentAccessIdTextBox.Text))
+                {
+                    if (_statusTextBlock != null)
+                    {
+                        _statusTextBlock.Text = "❌ Укажите Agent Access ID";
+                        _statusTextBlock.Foreground = System.Windows.Media.Brushes.Red;
+                    }
+                    return;
+                }
+
                 if (_apiKeyPasswordBox == null || string.IsNullOrWhiteSpace(_apiKeyPasswordBox.Password))
                 {
                     if (_statusTextBlock != null)
@@ -209,7 +233,8 @@ namespace AIAssistantEndpoint.UI
                     apiKey: _apiKeyPasswordBox.Password)
                 {
                     UseSSL = _useSSLCheckBox.IsChecked ?? true,
-                    TimeoutMs = timeout
+                    TimeoutMs = timeout,
+                    AgentAccessId = _agentAccessIdTextBox.Text
                 };
 
                 var configManager = new JsonConfigurationManager();
